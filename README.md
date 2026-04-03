@@ -158,7 +158,7 @@ AI-Edits aims to:
 
 ## Authors
 
-**Praneet Popuri, Steve (Yu-Hsin) Lin, Pranav Karthik, Gabe Brazil, Arista Ranka, Kevin Tseng, Kevin Park**
+**Praneet Popuri (Project Manager), Steve (Yu-Hsin) Lin, Pranav Karthik, Gabe Brazil, Arista Ranka, Kevin Tseng, Kevin Park**
 
 ---
 
