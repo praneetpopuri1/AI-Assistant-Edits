@@ -1,0 +1,1 @@
+from transformers import AutoProcessor, AutoModelForVision2Seq
