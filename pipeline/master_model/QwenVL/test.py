@@ -76,5 +76,5 @@ def inference(video, prompt, max_new_tokens=2048, total_pixels=20480 * 32 * 32, 
     return output_text[0]
 
 
-answer = inference("../../../short_clips/pranav_monkey.mp4", "Describe the video in detail, including key moments and overall theme.")
+answer = inference("../../../short_clips/pranav_monkey.mp4", "Understand the video and answer these three questions: 1) What action does the person do at the beginning of the video? 2) what items does the person in the video hold up, in order? 3) what is the title of the book the person held up?")
 print(answer)
