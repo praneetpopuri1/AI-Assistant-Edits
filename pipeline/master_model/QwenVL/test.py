@@ -1,8 +1,9 @@
 import torch
 from transformers import AutoProcessor, AutoModelForImageTextToText, BitsAndBytesConfig
 from qwen_vl_utils import process_vision_info
+import os
 
-
+hf_token = os.environ.get("HF_TOKEN")
 model_id = "Qwen/Qwen3-VL-8B-Thinking"
 
 quant_config = BitsAndBytesConfig(
@@ -12,13 +13,14 @@ quant_config = BitsAndBytesConfig(
     bnb_4bit_use_double_quant=True,
 )
 
-processor = AutoProcessor.from_pretrained(model_id)
+processor = AutoProcessor.from_pretrained(model_id, token=hf_token)
 
 model = AutoModelForImageTextToText.from_pretrained(
     model_id,
     device_map="auto",
     quantization_config=quant_config,
     torch_dtype=torch.float16,
+    token=hf_token
 )
 
 
