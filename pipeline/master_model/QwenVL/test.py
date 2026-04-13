@@ -1,30 +1,25 @@
 import torch
-from transformers import AutoProcessor, AutoModelForImageTextToText, BitsAndBytesConfig
+from transformers import AutoProcessor, AutoModelForImageTextToText
 from qwen_vl_utils import process_vision_info
 import os
+import time
 
+t0 = time.time()
 hf_token = os.environ.get("HF_TOKEN")
 model_id = "Qwen/Qwen3-VL-8B-Thinking"
 
-quant_config = BitsAndBytesConfig(
-    load_in_4bit=True,
-    bnb_4bit_compute_dtype=torch.float16,
-    bnb_4bit_quant_type="nf4",
-    bnb_4bit_use_double_quant=True,
-)
 
 processor = AutoProcessor.from_pretrained(model_id, token=hf_token)
 
 model = AutoModelForImageTextToText.from_pretrained(
     model_id,
     device_map="auto",
-    quantization_config=quant_config,
     torch_dtype=torch.float16,
     token=hf_token
 )
 
 
-def inference(video, prompt, max_new_tokens=2048, total_pixels=20480 * 32 * 32, min_pixels=64 * 32 * 32, max_frames= 2048, sample_fps = 2):
+def inference(video, prompt, max_new_tokens=2048, total_pixels=20480 * 32 * 32, min_pixels=64 * 32 * 32, max_frames= 2048, sample_fps = 5):
     """
     Perform multimodal inference on input video and text prompt to generate model response.
 
@@ -61,22 +56,51 @@ def inference(video, prompt, max_new_tokens=2048, total_pixels=20480 * 32 * 32, 
         },
     ]
     text = processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+    print("chat template:", time.time() - t0)
+    t1 = time.time()
     image_inputs, video_inputs, video_kwargs = process_vision_info([messages], return_video_kwargs=True, 
                                                                    image_patch_size= 16,
                                                                    return_video_metadata=True)
+    print("process_vision_info:", time.time() - t1)
     if video_inputs is not None:
+        t2 = time.time()
         video_inputs, video_metadatas = zip(*video_inputs)
         video_inputs, video_metadatas = list(video_inputs), list(video_metadatas)
+        print("video unpack:", time.time() - t2)
     else:
         video_metadatas = None
+    t3 = time.time()
     inputs = processor(text=[text], images=image_inputs, videos=video_inputs, video_metadata=video_metadatas, **video_kwargs, do_resize=False, return_tensors="pt")
+    print("processor:", time.time() - t3)
+    t4 = time.time()
     inputs = inputs.to('cuda')
+    print("to cuda:", time.time() - t4)
 
+    t5 = time.time()
     output_ids = model.generate(**inputs, max_new_tokens=max_new_tokens)
+    print("generate:", time.time() - t5)
+
+    t6 = time.time()
     generated_ids = [output_ids[len(input_ids):] for input_ids, output_ids in zip(inputs.input_ids, output_ids)]
     output_text = processor.batch_decode(generated_ids, skip_special_tokens=True, clean_up_tokenization_spaces=True)
+    print("decode:", time.time() - t6)
     return output_text[0]
 
 
-answer = inference("../../../short_clips/pranav_monkey.mp4", "Understand the video and answer these three questions: 1) What action does the person do at the beginning of the video? 2) what items does the person in the video hold up, in order? 3) what is the title of the book the person held up?")
+answer = inference("../../../short_clips/pranav_monkey_fixed.mp4", "Understand the video and answer these three questions: 1) What action does the person do at the beginning of the video? 2) what items does the person in the video hold up, in order? 3) what is the title of the book the person held up?")
 print(answer)
+
+
+#EXAMPLE OUTPUT:
+# Got it, let's break down the video step by step. 
+
+# First, the beginning of the video. The first frame shows the person, and then in the next frames, they wave. So the action at the beginning is waving. Let me check: the second frame (0.2s to 1.2s) shows the person raising their hand to wave. Yep, that's the first action.
+
+# Second, the items held up in order. Let's list the sequence. First, after waving, they hold up a book. Then, after the book, they hold up a box (the blue one for slide bags). Then, they hold up a container with a ball (the black one). So the order is book, blue box, container. Let's confirm: frame 4-9 is book, then frame 17-22 is blue box, then 23-36 is the container. Correct.
+
+# Third, the book's title. The book is shown in frames 4-9, and the cover has "Patterns for Building AI Agents". Let's check the text: in frame 5-8, the book cover says "Patterns for Building AI Agents". So that's the title.
+# </think>
+
+# 1) At the beginning of the video, the person waves their hand.  
+# 2) The items the person holds up, in order, are: a book, a blue box labeled "Slide Bags," and a cylindrical container with a spherical top.  
+# 3) The title of the book is "Patterns for Building AI Agents."
