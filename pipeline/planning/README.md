@@ -1,0 +1,136 @@
+# Planning Pipeline (Local + Colab)
+
+This package migrates planning out of a single notebook into reusable modules:
+
+- Local machine:
+  - metadata extraction (`ffprobe`)
+  - optional Whisper transcription
+  - optional frame sampling for frame-array requests
+  - post-Colab plan validation and local rendering
+- Colab:
+  - Qwen Pass 1 timeline understanding
+  - Qwen Pass 2 edit plan generation
+  - final plan assembly
+
+## Structure
+
+- `shared/`
+  - shared prompt builders and normalization helpers extracted from notebook logic
+- `local/`
+  - local preprocessing and local-to-colab orchestration script
+- `colab_api/`
+  - FastAPI app and Qwen engine used inside Colab
+
+## Colab setup (step-by-step)
+
+Use a single Colab notebook with GPU runtime.
+
+### 1) Clone/mount repo in Colab
+
+```python
+from google.colab import drive
+drive.mount("/content/drive")
+%cd /content
+!git clone <your-repo-url> ai-edits
+%cd /content/ai-edits
+```
+
+If you already keep the repo in Drive, just `%cd` into it.
+
+### 2) Install dependencies
+
+```bash
+pip install -r pipeline/planning/requirements.txt
+pip install -U "transformers>=4.53.0" accelerate sentencepiece qwen-vl-utils[decord]
+```
+
+### 3) (Optional but common) set HF auth
+
+```python
+import os
+os.environ["HF_TOKEN"] = "your_hf_token"
+```
+
+### 4) Start FastAPI server
+
+```bash
+uvicorn pipeline.planning.colab_api.app:app --host 0.0.0.0 --port 8000
+```
+
+You should now have:
+- `GET /health`
+- `POST /plan`
+
+### 5) Expose Colab server
+
+Use one tunnel option:
+
+```bash
+# Option A: cloudflared (quick)
+cloudflared tunnel --url http://127.0.0.1:8000
+```
+
+or
+
+```bash
+# Option B: ngrok
+ngrok http 8000
+```
+
+Copy the HTTPS URL and use it as `--colab-url` locally.
+
+## Run local orchestration
+
+### Mode A: baseline video path (recommended first)
+
+In this mode, Colab reads the video file path directly. Pass a path that exists in Colab.
+
+```bash
+python -m pipeline.planning.local.run_local_to_colab \
+  --video /local/path/video.mp4 \
+  --colab-url https://your-colab-endpoint \
+  --colab-video-path /content/drive/MyDrive/test_videos/video.mp4 \
+  --prompt "remove filler and keep it engaging" \
+  --run-whisper \
+  --output-plan edit_plans/generated_from_colab.json \
+  --render-out output_videos/rendered_from_colab.mp4
+```
+
+### Mode B: frame-array transport (cookbook-style list input)
+
+In this mode, local backend samples frames and sends them to Colab as base64 JPEGs. Colab decodes and passes them to Qwen as frame list input with `sample_fps`.
+
+```bash
+python -m pipeline.planning.local.run_local_to_colab \
+  --video /local/path/video.mp4 \
+  --colab-url https://your-colab-endpoint \
+  --prompt "remove filler and keep it engaging" \
+  --run-whisper \
+  --use-frame-array \
+  --sample-fps 2 \
+  --max-frames 120 \
+  --output-plan edit_plans/generated_from_colab_frames.json \
+  --render-out output_videos/rendered_from_colab_frames.mp4
+```
+
+This follows Qwen cookbook behavior:
+- full video path mode for automatic sampling, and
+- frame-list mode where `sample_fps` describes temporal density of provided frames.
+
+## What was implemented for steps 1-4
+
+1. **Refactor notebook logic into shared modules**  
+   Shared helpers now live in `pipeline/planning/shared/`.
+2. **Stand up minimal Colab FastAPI endpoint**  
+   `pipeline/planning/colab_api/app.py` exposes `/plan`.
+3. **Wire local orchestrator -> Colab -> validate+render**  
+   `pipeline/planning/local/run_local_to_colab.py` handles this flow.
+4. **Support baseline video and frame-array transport**  
+   Both are implemented and selectable via CLI flags.
+
+## Validation + renderer invariants
+
+- Local validation uses `pipeline/render/validate_plan.py`.
+- Local render uses `pipeline/render/render.py`.
+- `edit_plan_schema.json` remains the source-of-truth contract.
+

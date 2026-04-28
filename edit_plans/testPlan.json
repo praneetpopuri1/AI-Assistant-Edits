@@ -1,0 +1,85 @@
+{
+    "source_video": {
+      "duration_s": 37.302,
+      "width": 1920,
+      "height": 1080,
+      "fps": 30.0
+    },
+    "segments": [
+      {
+        "start_s": 0.0,
+        "end_s": 4.0,
+        "action": "keep",
+        "speed": 1.0,
+        "transition_in": {
+          "type": "none"
+        }
+      },
+      {
+        "start_s": 4.0,
+        "end_s": 16.0,
+        "action": "keep",
+        "speed": 1.0,
+        "transition_in": {
+          "type": "none"
+        }
+      },
+      {
+        "start_s": 16.0,
+        "end_s": 22.0,
+        "action": "keep",
+        "speed": 1.0,
+        "transition_in": {
+          "type": "none"
+        }
+      },
+      {
+        "start_s": 22.0,
+        "end_s": 37.0,
+        "action": "keep",
+        "speed": 1.0,
+        "transition_in": {
+          "type": "none"
+        }
+      },
+      {
+        "start_s": 37.0,
+        "end_s": 37.302,
+        "action": "keep",
+        "speed": 1.0,
+        "transition_in": {
+          "type": "none"
+        }
+      }
+    ],
+    "captions": {
+      "enabled": false,
+      "position": "bottom_center",
+      "grouping": "sentence",
+      "words": []
+    },
+    "zooms": [
+      {
+        "start_s": 32.0,
+        "end_s": 35.0,
+        "scale": 1.25,
+        "anchor": "center",
+        "easing": "ease_in_out"
+      }
+    ],
+    "overlays": [],
+    "text_overlays": [],
+    "music": {
+      "enabled": false,
+      "mood": "none",
+      "start_s": 0,
+      "end_s": 37.302,
+      "volume": 0.15,
+      "duck_under_speech": true
+    },
+    "reframe": {
+      "enabled": false,
+      "target_aspect_ratio": "9:16",
+      "focus": "face_track"
+    }
+  }

@@ -1,0 +1,15 @@
+{
+  "source_video": {
+    "duration_s": 10,
+    "width": 1920,
+    "height": 1080,
+    "fps": 30
+  },
+  "segments": [
+    { "start_s": 0, "end_s": 10, "action": "keep", "speed": 1 }
+  ],
+  "captions": {
+    "enabled": false,
+    "words": []
+  }
+}

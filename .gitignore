@@ -2,3 +2,8 @@ venv/
 videos/
 __pycache__/
 *.pyc
+
+# Generated output vids
+output_videos/
+# locally stored input videos
+renderer/public/

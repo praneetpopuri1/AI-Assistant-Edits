@@ -1,0 +1,266 @@
+{
+  "source_video": {
+    "duration_s": 37.302,
+    "width": 1920,
+    "height": 1080,
+    "fps": 30.0
+  },
+  "segments": [
+    {
+      "start_s": 0.0,
+      "end_s": 3.8,
+      "action": "keep",
+      "speed": 1.0,
+      "transition_in": {
+        "type": "none"
+      }
+    },
+    {
+      "start_s": 3.8,
+      "end_s": 4.6,
+      "action": "cut",
+      "cut_reason": "filler"
+    },
+    {
+      "start_s": 4.6,
+      "end_s": 14.5,
+      "action": "keep",
+      "speed": 1.08,
+      "transition_in": {
+        "type": "crossfade",
+        "duration_s": 0.45
+      }
+    },
+    {
+      "start_s": 14.5,
+      "end_s": 16.0,
+      "action": "cut",
+      "cut_reason": "repetition"
+    },
+    {
+      "start_s": 16.0,
+      "end_s": 21.7,
+      "action": "keep",
+      "speed": 0.95,
+      "transition_in": {
+        "type": "wipe_left",
+        "duration_s": 0.35
+      }
+    },
+    {
+      "start_s": 21.7,
+      "end_s": 22.6,
+      "action": "cut",
+      "cut_reason": "pacing"
+    },
+    {
+      "start_s": 22.6,
+      "end_s": 33.2,
+      "action": "keep",
+      "speed": 1.12,
+      "transition_in": {
+        "type": "fade_from_black",
+        "duration_s": 0.4
+      }
+    },
+    {
+      "start_s": 33.2,
+      "end_s": 34.0,
+      "action": "cut",
+      "cut_reason": "other"
+    },
+    {
+      "start_s": 34.0,
+      "end_s": 37.302,
+      "action": "keep",
+      "speed": 1.0,
+      "transition_in": {
+        "type": "wipe_up",
+        "duration_s": 0.3
+      }
+    }
+  ],
+  "captions": {
+    "enabled": true,
+    "position": "bottom_center",
+    "grouping": "phrase",
+    "words": [
+      {
+        "word": "hi",
+        "start_s": 0.2,
+        "end_s": 0.5,
+        "emphasis": "none"
+      },
+      {
+        "word": "book",
+        "start_s": 5.1,
+        "end_s": 5.6,
+        "emphasis": "highlight"
+      },
+      {
+        "word": "details",
+        "start_s": 9.9,
+        "end_s": 10.4,
+        "emphasis": "bold"
+      },
+      {
+        "word": "box",
+        "start_s": 16.6,
+        "end_s": 17.0,
+        "emphasis": "color_pop"
+      },
+      {
+        "word": "bottle",
+        "start_s": 25.2,
+        "end_s": 25.8,
+        "emphasis": "highlight"
+      },
+      {
+        "word": "final",
+        "start_s": 35.0,
+        "end_s": 35.4,
+        "emphasis": "bold"
+      }
+    ]
+  },
+  "zooms": [
+    {
+      "start_s": 1.0,
+      "end_s": 2.8,
+      "scale": 1.18,
+      "anchor": "face",
+      "easing": "ease_in_out"
+    },
+    {
+      "start_s": 7.5,
+      "end_s": 9.4,
+      "scale": 1.28,
+      "anchor": "center",
+      "easing": "ease_out"
+    },
+    {
+      "start_s": 17.8,
+      "end_s": 19.7,
+      "scale": 1.35,
+      "anchor": "top_third",
+      "easing": "ease_in"
+    },
+    {
+      "start_s": 27.0,
+      "end_s": 29.4,
+      "scale": 1.22,
+      "anchor": "custom",
+      "anchor_xy": {
+        "x": 0.64,
+        "y": 0.44
+      },
+      "easing": "linear"
+    },
+    {
+      "start_s": 35.1,
+      "end_s": 36.9,
+      "scale": 1.4,
+      "anchor": "bottom_third",
+      "easing": "spring"
+    }
+  ],
+  "overlays": [
+    {
+      "start_s": 5.2,
+      "end_s": 8.4,
+      "image_query": "open book close-up on desk",
+      "position": "picture_in_picture",
+      "animation": "fade_in"
+    },
+    {
+      "start_s": 10.2,
+      "end_s": 12.8,
+      "image_query": "blue cardboard package product shot",
+      "position": "right_third",
+      "animation": "slide_in_right"
+    },
+    {
+      "start_s": 16.4,
+      "end_s": 18.8,
+      "image_query": "clean product studio background",
+      "position": "left_third",
+      "animation": "slide_in_left"
+    },
+    {
+      "start_s": 23.0,
+      "end_s": 24.9,
+      "image_query": "minimal gradient texture",
+      "position": "top_half",
+      "animation": "slide_in_up"
+    },
+    {
+      "start_s": 26.0,
+      "end_s": 27.8,
+      "image_query": "small bottle macro photography",
+      "position": "bottom_half",
+      "animation": "pop"
+    },
+    {
+      "start_s": 30.0,
+      "end_s": 31.8,
+      "image_query": "simple geometric icon collage",
+      "position": "corner_tr",
+      "animation": "scale_up"
+    }
+  ],
+  "text_overlays": [
+    {
+      "start_s": 0.0,
+      "end_s": 2.4,
+      "text": "Quick Item Demo",
+      "position": "top_center",
+      "style": "title_card",
+      "animation": "fade_in"
+    },
+    {
+      "start_s": 5.0,
+      "end_s": 7.4,
+      "text": "Book Segment",
+      "position": "bottom_left",
+      "style": "lower_third",
+      "animation": "slide_in_up"
+    },
+    {
+      "start_s": 11.1,
+      "end_s": 13.0,
+      "text": "3 Objects Shown",
+      "position": "top_right",
+      "style": "stat",
+      "animation": "pop"
+    },
+    {
+      "start_s": 16.2,
+      "end_s": 18.2,
+      "text": "Blue Box Focus",
+      "position": "center",
+      "style": "callout",
+      "animation": "typewriter"
+    },
+    {
+      "start_s": 24.0,
+      "end_s": 25.8,
+      "text": "Bottle Rotation",
+      "position": "bottom_center",
+      "style": "label",
+      "animation": "none"
+    }
+  ],
+  "music": {
+    "enabled": true,
+    "mood": "upbeat",
+    "start_s": 0.0,
+    "end_s": 37.302,
+    "volume": 0.14,
+    "duck_under_speech": true
+  },
+  "reframe": {
+    "enabled": true,
+    "target_aspect_ratio": "9:16",
+    "focus": "face_track"
+  }
+}

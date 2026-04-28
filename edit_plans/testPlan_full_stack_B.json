@@ -1,0 +1,265 @@
+{
+  "source_video": {
+    "duration_s": 37.302,
+    "width": 1920,
+    "height": 1080,
+    "fps": 30.0
+  },
+  "segments": [
+    {
+      "start_s": 0.0,
+      "end_s": 2.2,
+      "action": "keep",
+      "speed": 1.0,
+      "transition_in": {
+        "type": "none"
+      }
+    },
+    {
+      "start_s": 2.2,
+      "end_s": 3.4,
+      "action": "cut",
+      "cut_reason": "silence"
+    },
+    {
+      "start_s": 3.4,
+      "end_s": 11.5,
+      "action": "keep",
+      "speed": 1.2,
+      "transition_in": {
+        "type": "wipe_right",
+        "duration_s": 0.4
+      }
+    },
+    {
+      "start_s": 11.5,
+      "end_s": 12.4,
+      "action": "cut",
+      "cut_reason": "off_topic"
+    },
+    {
+      "start_s": 12.4,
+      "end_s": 20.0,
+      "action": "keep",
+      "speed": 0.9,
+      "transition_in": {
+        "type": "crossfade",
+        "duration_s": 0.55
+      }
+    },
+    {
+      "start_s": 20.0,
+      "end_s": 21.0,
+      "action": "cut",
+      "cut_reason": "pacing"
+    },
+    {
+      "start_s": 21.0,
+      "end_s": 30.4,
+      "action": "keep",
+      "speed": 1.05,
+      "transition_in": {
+        "type": "fade_from_black",
+        "duration_s": 0.35
+      }
+    },
+    {
+      "start_s": 30.4,
+      "end_s": 31.4,
+      "action": "cut",
+      "cut_reason": "repetition"
+    },
+    {
+      "start_s": 31.4,
+      "end_s": 37.302,
+      "action": "keep",
+      "speed": 1.0,
+      "transition_in": {
+        "type": "wipe_up",
+        "duration_s": 0.28
+      }
+    }
+  ],
+  "captions": {
+    "enabled": true,
+    "position": "top_center",
+    "grouping": "word_by_word",
+    "words": [
+      {
+        "word": "start",
+        "start_s": 0.1,
+        "end_s": 0.4,
+        "emphasis": "color_pop"
+      },
+      {
+        "word": "book",
+        "start_s": 4.0,
+        "end_s": 4.4,
+        "emphasis": "bold"
+      },
+      {
+        "word": "pages",
+        "start_s": 6.2,
+        "end_s": 6.7,
+        "emphasis": "none"
+      },
+      {
+        "word": "box",
+        "start_s": 13.0,
+        "end_s": 13.4,
+        "emphasis": "highlight"
+      },
+      {
+        "word": "label",
+        "start_s": 17.2,
+        "end_s": 17.7,
+        "emphasis": "none"
+      },
+      {
+        "word": "bottle",
+        "start_s": 23.5,
+        "end_s": 24.0,
+        "emphasis": "highlight"
+      },
+      {
+        "word": "close",
+        "start_s": 33.2,
+        "end_s": 33.8,
+        "emphasis": "bold"
+      }
+    ]
+  },
+  "zooms": [
+    {
+      "start_s": 3.9,
+      "end_s": 5.3,
+      "scale": 1.16,
+      "anchor": "center",
+      "easing": "ease_in_out"
+    },
+    {
+      "start_s": 8.0,
+      "end_s": 9.6,
+      "scale": 1.32,
+      "anchor": "face",
+      "easing": "spring"
+    },
+    {
+      "start_s": 13.2,
+      "end_s": 15.4,
+      "scale": 1.42,
+      "anchor": "custom",
+      "anchor_xy": {
+        "x": 0.52,
+        "y": 0.36
+      },
+      "easing": "ease_out"
+    },
+    {
+      "start_s": 21.4,
+      "end_s": 23.4,
+      "scale": 1.24,
+      "anchor": "bottom_third",
+      "easing": "linear"
+    },
+    {
+      "start_s": 32.0,
+      "end_s": 34.8,
+      "scale": 1.3,
+      "anchor": "top_third",
+      "easing": "ease_in"
+    }
+  ],
+  "overlays": [
+    {
+      "start_s": 4.8,
+      "end_s": 7.2,
+      "image_query": "book pages flipping close-up",
+      "position": "fullscreen",
+      "animation": "fade_in"
+    },
+    {
+      "start_s": 13.1,
+      "end_s": 14.9,
+      "image_query": "blue retail box isolated background",
+      "position": "corner_tl",
+      "animation": "none"
+    },
+    {
+      "start_s": 15.6,
+      "end_s": 17.6,
+      "image_query": "product barcode packaging detail",
+      "position": "corner_bl",
+      "animation": "slide_in_up"
+    },
+    {
+      "start_s": 22.1,
+      "end_s": 24.2,
+      "image_query": "small cosmetic bottle studio light",
+      "position": "corner_br",
+      "animation": "pop"
+    },
+    {
+      "start_s": 26.0,
+      "end_s": 28.4,
+      "image_query": "clean UI icon set transparent background",
+      "position": "picture_in_picture",
+      "animation": "scale_up"
+    }
+  ],
+  "text_overlays": [
+    {
+      "start_s": 0.0,
+      "end_s": 1.8,
+      "text": "Pipeline Test Plan B",
+      "position": "center",
+      "style": "title_card",
+      "animation": "pop"
+    },
+    {
+      "start_s": 4.0,
+      "end_s": 6.0,
+      "text": "Fast Section",
+      "position": "top_left",
+      "style": "label",
+      "animation": "fade_in"
+    },
+    {
+      "start_s": 12.8,
+      "end_s": 14.8,
+      "text": "Object Swap",
+      "position": "bottom_right",
+      "style": "callout",
+      "animation": "slide_in_up"
+    },
+    {
+      "start_s": 21.6,
+      "end_s": 23.1,
+      "text": "Main Focus: Bottle",
+      "position": "top_center",
+      "style": "lower_third",
+      "animation": "typewriter"
+    },
+    {
+      "start_s": 32.4,
+      "end_s": 34.4,
+      "text": "End Recap",
+      "position": "bottom_center",
+      "style": "stat",
+      "animation": "none"
+    }
+  ],
+  "music": {
+    "enabled": true,
+    "mood": "playful",
+    "start_s": 0.8,
+    "end_s": 36.8,
+    "volume": 0.18,
+    "duck_under_speech": false
+  },
+  "reframe": {
+    "enabled": true,
+    "target_aspect_ratio": "1:1",
+    "focus": "center"
+  }
+}

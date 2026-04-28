@@ -1,0 +1,309 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "VLM Edit Plan",
+  "description": "A structured edit plan produced by a video-language model. Describes editorial decisions for a single source video. The renderer executes this plan deterministically — every editorial judgment lives here, not in the renderer.",
+  "type": "object",
+  "required": ["source_video", "segments", "captions"],
+  "additionalProperties": false,
+  "properties": {
+
+    "source_video": {
+      "type": "object",
+      "description": "Metadata about the input video. Populated by the pipeline before the VLM sees it, so the model knows what it's working with.",
+      "required": ["duration_s", "width", "height", "fps"],
+      "additionalProperties": false,
+      "properties": {
+        "duration_s":  { "type": "number", "description": "Total duration in seconds." },
+        "width":       { "type": "integer", "description": "Frame width in pixels." },
+        "height":      { "type": "integer", "description": "Frame height in pixels." },
+        "fps":         { "type": "number", "description": "Frames per second of the source." }
+      }
+    },
+
+    "segments": {
+      "type": "array",
+      "description": "An ordered list of time segments that partition the entire source video. Every second of the source must be covered by exactly one segment — no gaps, no overlaps. This is the backbone of the edit: it defines what stays, what gets cut, and the pacing of the final video.",
+      "items": {
+        "type": "object",
+        "required": ["start_s", "end_s", "action"],
+        "additionalProperties": false,
+        "properties": {
+          "start_s": {
+            "type": "number",
+            "description": "Start time in seconds (inclusive)."
+          },
+          "end_s": {
+            "type": "number",
+            "description": "End time in seconds (exclusive)."
+          },
+          "action": {
+            "type": "string",
+            "enum": ["keep", "cut"],
+            "description": "'keep' = include in the final video. 'cut' = remove entirely."
+          },
+          "cut_reason": {
+            "type": "string",
+            "enum": ["silence", "filler", "repetition", "off_topic", "pacing", "other"],
+            "description": "Why this segment was cut. Required when action='cut'. Helps the judge evaluate whether cuts are justified."
+          },
+          "speed": {
+            "type": "number",
+            "minimum": 0.5,
+            "maximum": 2.0,
+            "default": 1.0,
+            "description": "Playback speed multiplier for this segment. 1.0 = normal. Only applies when action='keep'. Use sparingly on speech — listeners notice speed changes above 1.25x or below 0.8x."
+          },
+          "transition_in": {
+            "type": "object",
+            "description": "Transition effect applied at the START of this segment (i.e., how we enter it from the previous segment). Only meaningful for 'keep' segments that follow a cut.",
+            "required": ["type"],
+            "additionalProperties": false,
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": ["none", "crossfade", "fade_from_black", "wipe_left", "wipe_right", "wipe_up"],
+                "description": "The transition type."
+              },
+              "duration_s": {
+                "type": "number",
+                "minimum": 0.1,
+                "maximum": 2.0,
+                "default": 0.5,
+                "description": "Duration of the transition in seconds."
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "captions": {
+      "type": "object",
+      "description": "Caption configuration and word-level timing. Captions track the speaker's words. The model decides: which words to display, how to group them, and what emphasis to apply. Timing comes from Whisper and is pre-populated — the model's job is grouping and emphasis.",
+      "required": ["enabled", "words"],
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether captions should be rendered at all."
+        },
+        "position": {
+          "type": "string",
+          "enum": ["bottom_center", "top_center", "center", "bottom_left", "bottom_right"],
+          "default": "bottom_center",
+          "description": "Where on screen captions appear."
+        },
+        "grouping": {
+          "type": "string",
+          "enum": ["word_by_word", "phrase", "sentence"],
+          "description": "How words are chunked into visible groups. 'word_by_word' = each word appears individually (TikTok-style). 'phrase' = 2-5 words appear together. 'sentence' = full sentences. This is an editorial decision about pacing and readability."
+        },
+        "words": {
+          "type": "array",
+          "description": "Word-level caption data. Timestamps come from Whisper. The model adds emphasis annotations.",
+          "items": {
+            "type": "object",
+            "required": ["word", "start_s", "end_s"],
+            "additionalProperties": false,
+            "properties": {
+              "word":    { "type": "string", "description": "The spoken word." },
+              "start_s": { "type": "number", "description": "When the word starts being spoken." },
+              "end_s":   { "type": "number", "description": "When the word finishes being spoken." },
+              "emphasis": {
+                "type": "string",
+                "enum": ["none", "highlight", "bold", "color_pop"],
+                "default": "none",
+                "description": "Visual emphasis for this word. The model should emphasize key terms, not random words. 'highlight' = background color behind word. 'bold' = heavier weight. 'color_pop' = different color from surrounding words."
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "zooms": {
+      "type": "array",
+      "description": "Zoom events. Each zoom specifies when to punch in, how far, and where to focus. Good editors zoom on moments of emphasis — a key point, a punchline, a dramatic pause. Bad editors zoom randomly. The model's zoom placement is a strong signal of editing taste.",
+      "default": [],
+      "items": {
+        "type": "object",
+        "required": ["start_s", "end_s", "scale"],
+        "additionalProperties": false,
+        "properties": {
+          "start_s": {
+            "type": "number",
+            "description": "When the zoom begins (in source video time)."
+          },
+          "end_s": {
+            "type": "number",
+            "description": "When the zoom ends and the frame returns to normal."
+          },
+          "scale": {
+            "type": "number",
+            "minimum": 1.0,
+            "maximum": 2.5,
+            "description": "Zoom multiplier. 1.0 = no zoom. 1.3 = typical 'punch in'. 2.0+ = extreme closeup. Values above 1.5 on 1080p footage will look pixelated."
+          },
+          "anchor": {
+            "type": "string",
+            "enum": ["face", "center", "top_third", "bottom_third", "custom"],
+            "default": "face",
+            "description": "What the zoom focuses on. 'face' = center on detected face (most common for talking-head). 'center' = geometric center of frame."
+          },
+          "anchor_xy": {
+            "type": "object",
+            "description": "Custom anchor point as normalized coordinates. Only used when anchor='custom'.",
+            "properties": {
+              "x": { "type": "number", "minimum": 0.0, "maximum": 1.0 },
+              "y": { "type": "number", "minimum": 0.0, "maximum": 1.0 }
+            }
+          },
+          "easing": {
+            "type": "string",
+            "enum": ["ease_in_out", "ease_in", "ease_out", "linear", "spring"],
+            "default": "ease_in_out",
+            "description": "How the zoom animates in. 'spring' gives a snappy, energetic feel (TikTok). 'ease_in_out' is smoother (professional)."
+          }
+        }
+      }
+    },
+
+    "overlays": {
+      "type": "array",
+      "description": "Image or graphic overlays inserted into the frame. These are B-roll images, diagrams, memes, or illustrations that appear on screen while the speaker talks. The model decides WHAT to show, WHEN, and WHERE — the image source is either a URL or a search query that the pipeline resolves. Good overlay placement shows a relevant image exactly when the speaker references a concept.",
+      "default": [],
+      "items": {
+        "type": "object",
+        "required": ["start_s", "end_s", "image_query", "position"],
+        "additionalProperties": false,
+        "properties": {
+          "start_s": {
+            "type": "number",
+            "description": "When the overlay appears (source video time)."
+          },
+          "end_s": {
+            "type": "number",
+            "description": "When the overlay disappears."
+          },
+          "image_query": {
+            "type": "string",
+            "description": "A descriptive search query for the overlay image. The pipeline uses this to fetch a relevant image. e.g., 'python logo', 'confused math meme', 'neural network diagram'. This tests whether the model understands what visual would complement the speech."
+          },
+          "image_url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Direct URL to an image. Used when the image is pre-specified rather than searched. Optional — either image_query or image_url should be provided."
+          },
+          "position": {
+            "type": "string",
+            "enum": ["fullscreen", "picture_in_picture", "left_third", "right_third", "top_half", "bottom_half", "corner_tr", "corner_tl", "corner_br", "corner_bl"],
+            "description": "Where the overlay appears on screen. 'fullscreen' = replaces the video frame entirely (true B-roll). 'picture_in_picture' = small inset while speaker remains visible."
+          },
+          "animation": {
+            "type": "string",
+            "enum": ["none", "fade_in", "slide_in_right", "slide_in_left", "slide_in_up", "pop", "scale_up"],
+            "default": "fade_in",
+            "description": "How the overlay enters the frame."
+          }
+        }
+      }
+    },
+
+    "text_overlays": {
+      "type": "array",
+      "description": "On-screen text that is NOT caption/subtitle text. Title cards, section headers, key stats, callout labels. The model writes the text content and decides placement. This tests content comprehension — can the model identify the key takeaway of a segment and surface it visually?",
+      "default": [],
+      "items": {
+        "type": "object",
+        "required": ["start_s", "end_s", "text", "position"],
+        "additionalProperties": false,
+        "properties": {
+          "start_s":  { "type": "number" },
+          "end_s":    { "type": "number" },
+          "text": {
+            "type": "string",
+            "maxLength": 80,
+            "description": "The text to display. Keep it short — this is a visual label, not a paragraph."
+          },
+          "position": {
+            "type": "string",
+            "enum": ["top_center", "bottom_center", "center", "top_left", "top_right", "bottom_left", "bottom_right"],
+            "default": "top_center"
+          },
+          "style": {
+            "type": "string",
+            "enum": ["title_card", "lower_third", "callout", "stat", "label"],
+            "default": "lower_third",
+            "description": "Visual style of the text overlay. The renderer interprets these as visual presets (font size, background, animation). The model's job is choosing the right one for the context."
+          },
+          "animation": {
+            "type": "string",
+            "enum": ["none", "fade_in", "typewriter", "slide_in_up", "pop"],
+            "default": "fade_in"
+          }
+        }
+      }
+    },
+
+    "music": {
+      "type": "object",
+      "description": "Background music / audio bed. The model selects mood and energy level; the pipeline maps this to a track from a pre-built library. The editorial decisions are: should there be music at all? What energy? When should it start/stop? Should it duck under speech?",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "mood": {
+          "type": "string",
+          "enum": ["upbeat", "chill", "dramatic", "corporate", "playful", "inspirational", "dark", "none"],
+          "description": "The mood/energy of the background track."
+        },
+        "start_s": {
+          "type": "number",
+          "default": 0,
+          "description": "When the music starts (source video time)."
+        },
+        "end_s": {
+          "type": "number",
+          "description": "When the music ends. Defaults to end of video if omitted."
+        },
+        "volume": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "default": 0.15,
+          "description": "Volume level relative to speech. 0.1-0.2 is typical for background music under speech."
+        },
+        "duck_under_speech": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether to automatically lower music volume when speech is detected."
+        }
+      }
+    },
+
+    "reframe": {
+      "type": "object",
+      "description": "Global reframing / aspect ratio change. Decides whether to crop the video to a different aspect ratio (e.g., 16:9 source to 9:16 for TikTok/Reels). This is a single global decision, not per-segment.",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "target_aspect_ratio": {
+          "type": "string",
+          "enum": ["16:9", "9:16", "1:1", "4:5"],
+          "description": "The output aspect ratio."
+        },
+        "focus": {
+          "type": "string",
+          "enum": ["face_track", "center", "custom"],
+          "default": "face_track",
+          "description": "How to position the crop. 'face_track' = keep the face centered as it moves."
+        }
+      }
+    }
+  }
+}
