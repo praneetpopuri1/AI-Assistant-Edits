@@ -35,7 +35,9 @@ class PlanRequest(BaseModel):
 
 class PlanResponse(BaseModel):
     run_id: str
+    pass1_raw_response: str
     timeline_events: list[dict[str, Any]]
+    pass2_raw_response: str
     model_plan_raw: dict[str, Any]
     final_edit_plan: dict[str, Any]
     warnings: list[str] = Field(default_factory=list)

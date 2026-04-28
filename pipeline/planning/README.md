@@ -51,7 +51,21 @@ import os
 os.environ["HF_TOKEN"] = "your_hf_token"
 ```
 
-### 4) Start FastAPI server
+### 4) Align model path with your existing notebook cache
+
+The server now defaults to the same notebook cache path:
+- `QWEN_MODEL_NAME=Qwen/Qwen3-VL-8B-Instruct`
+- `QWEN_CACHE_DIR=/content/drive/MyDrive/hf_models`
+
+Set explicitly if you want:
+
+```python
+import os
+os.environ["QWEN_MODEL_NAME"] = "Qwen/Qwen3-VL-8B-Instruct"
+os.environ["QWEN_CACHE_DIR"] = "/content/drive/MyDrive/hf_models"
+```
+
+### 5) Start FastAPI server
 
 ```bash
 uvicorn pipeline.planning.colab_api.app:app --host 0.0.0.0 --port 8000
@@ -59,9 +73,10 @@ uvicorn pipeline.planning.colab_api.app:app --host 0.0.0.0 --port 8000
 
 You should now have:
 - `GET /health`
+- `GET /model-status`
 - `POST /plan`
 
-### 5) Expose Colab server
+### 6) Expose Colab server
 
 Use one tunnel option:
 
@@ -78,6 +93,18 @@ ngrok http 8000
 ```
 
 Copy the HTTPS URL and use it as `--colab-url` locally.
+
+### 7) Verify model cache and server
+
+From local terminal:
+
+```bash
+curl -s https://your-colab-endpoint/health
+curl -s https://your-colab-endpoint/model-status
+```
+
+`/model-status` returns whether model weights already exist in cache.  
+If `exists=false`, the first `/plan` call will download/load into `QWEN_CACHE_DIR`.
 
 ## Run local orchestration
 
@@ -116,6 +143,24 @@ python -m pipeline.planning.local.run_local_to_colab \
 This follows Qwen cookbook behavior:
 - full video path mode for automatic sampling, and
 - frame-list mode where `sample_fps` describes temporal density of provided frames.
+
+## Pass 1 and Pass 2 outputs from server
+
+`POST /plan` now returns both raw model outputs for debugging:
+- `pass1_raw_response` (direct text from timeline pass)
+- `timeline_events` (validated parsed events)
+- `pass2_raw_response` (direct text from edit-plan pass)
+- `model_plan_raw` (parsed pass 2 JSON before final assembly)
+- `final_edit_plan`
+
+This is useful for quickly seeing what Pass 1 generated versus what was accepted by validation.
+
+## Video path behavior (important)
+
+- **Baseline `video_path` mode**: the path must exist on **Colab** (`--colab-video-path`).  
+  Local path can be different.
+- **Frame-array mode (`--use-frame-array`)**: video needs to exist on **local** machine only; frames are sent over HTTP.
+- In current local script, `--video` is always required locally because local preprocess (Whisper/frame sampling/render source) uses it.
 
 ## What was implemented for steps 1-4
 

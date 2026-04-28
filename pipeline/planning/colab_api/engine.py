@@ -5,6 +5,7 @@ import io
 import os
 import re
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 from PIL import Image
@@ -23,6 +24,7 @@ from pipeline.planning.shared.prompts import build_plan_prompt, build_timeline_p
 @dataclass
 class PlannerConfig:
     model_name: str = "Qwen/Qwen3-VL-8B-Instruct"
+    cache_dir: str = "/content/drive/MyDrive/hf_models"
     torch_dtype: str = "bfloat16"
 
 
@@ -50,14 +52,49 @@ class QwenPlannerEngine:
             ) from exc
 
         dtype = getattr(torch, self.config.torch_dtype)
+        Path(self.config.cache_dir).mkdir(parents=True, exist_ok=True)
         self._model = Qwen3VLForConditionalGeneration.from_pretrained(
             self.config.model_name,
             torch_dtype=dtype,
             device_map="auto",
             attn_implementation="sdpa",
+            cache_dir=self.config.cache_dir,
         )
-        self._processor = AutoProcessor.from_pretrained(self.config.model_name)
+        self._processor = AutoProcessor.from_pretrained(
+            self.config.model_name,
+            cache_dir=self.config.cache_dir,
+        )
         self._vision_fn = process_vision_info
+
+    def model_cache_status(self) -> dict[str, Any]:
+        """
+        Check whether model weights already exist at configured location.
+        """
+        model_name = self.config.model_name
+        cache_dir = Path(self.config.cache_dir)
+
+        # If model_name is a local filesystem path, use it directly.
+        local_model_path = Path(model_name)
+        if local_model_path.exists():
+            return {
+                "model_name": model_name,
+                "cache_dir": str(cache_dir),
+                "exists": True,
+                "resolved_path": str(local_model_path),
+                "mode": "local_path",
+            }
+
+        # Hugging Face cache layout when using cache_dir with from_pretrained(repo_id).
+        repo_cache_dir = cache_dir / f"models--{model_name.replace('/', '--')}"
+        snapshots_dir = repo_cache_dir / "snapshots"
+        has_snapshot = snapshots_dir.exists() and any(snapshots_dir.iterdir())
+        return {
+            "model_name": model_name,
+            "cache_dir": str(cache_dir),
+            "exists": bool(has_snapshot),
+            "resolved_path": str(repo_cache_dir),
+            "mode": "hf_cache_dir",
+        }
 
     def _decode_frames(self, frame_items: list[dict[str, Any]]) -> list[Image.Image]:
         images: list[Image.Image] = []
@@ -164,7 +201,10 @@ class QwenPlannerEngine:
             raw_output = raw_output[m.end() :].strip()
         return raw_output.strip()
 
-    def generate(self, request: PlanRequest) -> tuple[list[dict[str, Any]], dict[str, Any], dict[str, Any], list[str]]:
+    def generate(
+        self,
+        request: PlanRequest,
+    ) -> tuple[str, list[dict[str, Any]], str, dict[str, Any], dict[str, Any], list[str]]:
         warnings: list[str] = []
         timeline_prompt = build_timeline_prompt(request.source_meta)
         timeline_response = self._run_prompt(
@@ -228,12 +268,13 @@ class QwenPlannerEngine:
                 caption_words=request.transcript_words,
             )
 
-        return timeline_events, model_plan_raw, final_edit_plan, warnings
+        return timeline_response, timeline_events, plan_response, model_plan_raw, final_edit_plan, warnings
 
 
 def build_engine_from_env() -> QwenPlannerEngine:
     config = PlannerConfig(
         model_name=os.environ.get("QWEN_MODEL_NAME", "Qwen/Qwen3-VL-8B-Instruct"),
+        cache_dir=os.environ.get("QWEN_CACHE_DIR", "/content/drive/MyDrive/hf_models"),
     )
     return QwenPlannerEngine(config=config)
 
